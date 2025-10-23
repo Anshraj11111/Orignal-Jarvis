@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GyaanBot - Virtual Assistant</title>
+  <link rel="shortcut icon" href="avatar.png" type="image/x-icon" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100;200;300;400;500;600;700&display=swap");
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Roboto Mono", monospace;
+    }
+
+    .main {
+      min-height: 100vh;
+      width: 100%;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image-container {
+      padding: 10px;
+      text-align: center;
+    }
+
+    .image-container .image img {
+      width: 350px;
+    }
+
+    .image-container h1 {
+      color: #00bcd4;
+      margin: 10px 0;
+      font-size: 40px;
+    }
+
+    .image-container p {
+      color: #9eb9bb;
+      margin-bottom: 40px;
+    }
+
+    .input {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 40vw;
+      height: 50px;
+      border-radius: 20px;
+      background: rgb(202 253 255 / 50%);
+    }
+
+    .talk {
+      background: transparent;
+      outline: none;
+      border: none;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .talk i {
+      font-size: 20px;
+      color: #aed0d0;
+    }
+
+    .content {
+      color: #aed0d0;
+      font-size: 15px;
+      margin-left: 15px;
+    }
+  </style>
+</head>
+
+<body>
+  <section class="main">
+    <div class="image-container">
+      <div class="image">
+        <img src="jarvis-jarvischatbot (1).gif" alt="image" />
+      </div>
+      <h1>GyaanBot</h1>
+      <p>I’m GyaanBot, your virtual assistant. How may I help you?</p>
+    </div>
+
+    <div class="input">
+      <button class="talk"><i class="fas fa-microphone-alt"></i></button>
+      <h1 class="content">Click here to speak</h1>
+    </div>
+  </section>
+
+  <script>
+    const btn = document.querySelector(".talk");
+    const content = document.querySelector(".content");
+    const WEATHER_API_KEY = "YOUR_OPENWEATHERMAP_API_KEY"; // <-- Replace with your key
+
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      utterance.lang = "en-US";
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function wishMe() {
+      const hour = new Date().getHours();
+      if (hour < 12) speak("Good morning Boss!");
+      else if (hour < 17) speak("Good afternoon Master!");
+      else speak("Good evening Sir!");
+    }
+
+    window.addEventListener("load", () => {
+      if (!sessionStorage.getItem("gyaanBotInitialized")) {
+        speak("Initializing GyaanBot...");
+        wishMe();
+        sessionStorage.setItem("gyaanBotInitialized", "true");
+      }
+    });
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      content.textContent = transcript;
+      takeCommand(transcript.toLowerCase());
+    };
+
+    btn.addEventListener("click", () => {
+      content.textContent = "Listening...";
+      recognition.start();
+    });
+
+    async function convertCurrency(amount, from, to) {
+      try {
+        const apiUrl = `https://api.exchangerate.host/convert?from=${from}&to=${to}&amount=${amount}`;
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+        if (data.result) {
+          speak(
+            `The converted amount is ${data.result.toFixed(2)} ${to.toUpperCase()}`
+          );
+        } else speak("Sorry, I couldn't fetch the conversion rate.");
+      } catch {
+        speak("An error occurred while converting currency.");
+      }
+    }
+
+    async function getWeather(location) {
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&units=metric&appid=${WEATHER_API_KEY}`;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) {
+          speak("I couldn't find weather data for that location.");
+          return;
+        }
+        const data = await res.json();
+        const temp = data.main.temp;
+        const desc = data.weather[0].description;
+        speak(`The temperature in ${location} is ${temp}°C with ${desc}.`);
+      } catch {
+        speak("Error fetching weather data.");
+      }
+    }
+
+    function getDirections(destination) {
+      if (!destination) {
+        speak("Please specify a destination.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          const url = `https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}&destination=${encodeURIComponent(
+            destination
+          )}`;
+          speak(`Getting directions to ${destination}`);
+          window.open(url, "_blank");
+        },
+        () => speak("Please enable location permissions.")
+      );
+    }
+
+    function takeCommand(message) {
+      if (message.includes("hello") || message.includes("hey")) {
+        speak("Hello Sir, how may I assist you?");
+      } else if (message.includes("convert currency")) {
+        const match = message.match(/convert (\d+(\.\d+)?) (\w{3}) to (\w{3})/);
+        if (match)
+          convertCurrency(match[1], match[3].toUpperCase(), match[4].toUpperCase());
+        else speak("Please say like: convert 100 USD to INR.");
+      } else if (message.includes("weather in")) {
+        const loc = message.replace("weather in", "").trim();
+        getWeather(loc);
+      } else if (message.includes("open google")) {
+        window.open("https://google.com", "_blank");
+        speak("Opening Google...");
+      } else if (message.includes("open youtube")) {
+        window.open("https://youtube.com", "_blank");
+        speak("Opening YouTube...");
+      } else if (message.includes("play music")) {
+        window.open("https://www.youtube.com/watch?v=w9Qo6p4XsXE", "_blank");
+        speak("Playing music...");
+      } else if (message.includes("open whatsapp")) {
+        window.open("https://web.whatsapp.com/", "_blank");
+        speak("Opening WhatsApp...");
+      } else if (message.includes("chat with mom")) {
+        window.open("https://wa.me/916232899904", "_blank");
+        speak("Opening chat with Mom...");
+      } else if (message.includes("call mom")) {
+        window.open("https://wa.me/916232899904?call=true", "_blank");
+        speak("Calling Mom...");
+      } else if (message.includes("open github")) {
+        window.open("https://github.com/Anshraj11111", "_blank");
+        speak("Opening your GitHub...");
+      } else if (message.includes("open my channel")) {
+        window.open(
+          "https://youtube.com/@keystrokescoffee?si=q1ovNa5UyW87GknN",
+          "_blank"
+        );
+        speak("Opening your YouTube channel...");
+      } else if (message.includes("play punjabi music")) {
+        window.open("https://www.youtube.com/watch?v=w9Qo6p4XsXE", "_blank");
+        speak("Playing music...");
+      } else if (
+        message.includes("what is") ||
+        message.includes("who is") ||
+        message.includes("what are")
+      ) {
+        const q = message.replace(/ /g, "+");
+        window.open(`https://www.google.com/search?q=${q}`, "_blank");
+        speak("Here’s what I found on Google.");
+      } else if (message.includes("wikipedia")) {
+        const q = message.replace("wikipedia", "").trim();
+        window.open(`https://en.wikipedia.org/wiki/${q}`, "_blank");
+        speak("Here’s the Wikipedia result.");
+      } else if (message.includes("time")) {
+        const time = new Date().toLocaleTimeString();
+        speak(`The time is ${time}`);
+      } else if (message.includes("date")) {
+        const date = new Date().toLocaleDateString();
+        speak(`Today's date is ${date}`);
+      } else if (message.includes("direction to")) {
+        const destination = message.replace("direction to", "").trim();
+        getDirections(destination);
+      } else if (message.includes("go back")) {
+        window.location.href = "index.html";
+        speak("Going back to the main page...");
+      } else {
+        window.open(
+          `https://www.google.com/search?q=${message.replace(/ /g, "+")}`,
+          "_blank"
+        );
+        speak(`Here’s what I found for ${message}`);
+      }
+    }
+  </script>
+</body>
+</html>
