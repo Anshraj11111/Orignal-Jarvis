@@ -19,10 +19,15 @@ function speak(text) {
 }
 
 async function getAIAnswer(question) {
+  console.log("🤖 Requesting AI answer for:", question);
+  
   // If no API key, return null
   if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
+    console.error("❌ API Key not configured!");
     return null;
   }
+  
+  console.log("✅ API Key found, making request...");
   
   try {
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
@@ -37,9 +42,21 @@ async function getAIAnswer(question) {
       })
     });
     
+    console.log("📡 API Response status:", response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ API Error Response:", errorText);
+      return null;
+    }
+    
     const data = await response.json();
+    console.log("📦 API Data received:", data);
+    
     if (data.candidates && data.candidates[0]) {
-      return data.candidates[0].content.parts[0].text;
+      const answer = data.candidates[0].content.parts[0].text;
+      console.log("✅ AI Answer extracted:", answer);
+      return answer;
     }
   } catch (error) {
     console.error("❌ AI API Error:", error);

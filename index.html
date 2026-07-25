@@ -36,6 +36,7 @@
 
     .image-container .image img {
       width: 350px;
+      max-width: 90vw;
     }
 
     .image-container h1 {
@@ -44,9 +45,22 @@
       font-size: 40px;
     }
 
+    @media (max-width: 768px) {
+      .image-container h1 {
+        font-size: 32px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .image-container h1 {
+        font-size: 28px;
+      }
+    }
+
     .image-container p {
       color: #9eb9bb;
       margin-bottom: 40px;
+      padding: 0 20px;
     }
 
     .input {
@@ -54,9 +68,26 @@
       justify-content: center;
       align-items: center;
       width: 40vw;
+      min-width: 300px;
+      max-width: 90vw;
       height: 50px;
       border-radius: 20px;
       background: rgb(202 253 255 / 50%);
+    }
+
+    @media (max-width: 768px) {
+      .input {
+        width: 80vw;
+        min-width: 250px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .input {
+        width: 90vw;
+        min-width: 200px;
+        height: 45px;
+      }
     }
 
     .talk {
