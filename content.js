@@ -5,6 +5,10 @@ let recognition = null;
 let watchdogInterval = null;
 let lastHeardTime = Date.now();
 
+// Gemini API Configuration
+const GEMINI_API_KEY = "AIzaSyAQ.Ab8RN6JecYdxCyf-eJ0ojb_D3ZJO8Z7qDgucRSXqmkGd_iSj2Q";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+
 function speak(text) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.rate = 1;
@@ -12,6 +16,36 @@ function speak(text) {
   utterance.volume = 1;
   utterance.lang = "en-US";
   window.speechSynthesis.speak(utterance);
+}
+
+async function getAIAnswer(question) {
+  // If no API key, return null
+  if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
+    return null;
+  }
+  
+  try {
+    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: `Answer this question in 2-3 short sentences: ${question}`
+          }]
+        }]
+      })
+    });
+    
+    const data = await response.json();
+    if (data.candidates && data.candidates[0]) {
+      return data.candidates[0].content.parts[0].text;
+    }
+  } catch (error) {
+    console.error("❌ AI API Error:", error);
+  }
+  
+  return null;
 }
 
 function injectBot() {
@@ -213,10 +247,25 @@ function executeCommand(message) {
   } else if (message.includes("open github")) {
     window.open("https://github.com/Anshraj11111", "_blank");
     speak("Opening GitHub");
-  } else if (message.includes("what is") || message.includes("who is") || message.includes("what are")) {
-    const query = message.replace(/ /g, "+");
-    window.open(`https://www.google.com/search?q=${query}`, "_blank");
-    speak("Here's what I found");
+  } else if (message.includes("what is") || message.includes("who is") || message.includes("what are") || message.includes("tell me about")) {
+    // AI-powered answer
+    statusEl.textContent = "🤖 Getting AI answer...";
+    speak("Let me find that for you.");
+    
+    getAIAnswer(message).then(answer => {
+      if (answer) {
+        console.log("🤖 AI Answer:", answer);
+        document.getElementById('gyaanbot-response').textContent = answer;
+        speak(answer);
+      } else {
+        // Fallback to Google search if no API key
+        const query = message.replace(/ /g, "+");
+        window.open(`https://www.google.com/search?q=${query}`, "_blank");
+        speak("Opening search results");
+      }
+    });
+    return; // Don't reset status immediately
+    
   } else if (message.includes("time")) {
     const time = new Date().toLocaleTimeString();
     speak(`The time is ${time}`);
