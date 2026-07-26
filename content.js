@@ -378,23 +378,26 @@ function executeCommand(message) {
     window.open("https://github.com/Anshraj11111", "_blank");
     speak("Opening GitHub");
   } else if (message.includes("what is") || message.includes("who is") || message.includes("what are") || message.includes("tell me about")) {
-    // AI-powered answer
+    // AI-powered answer WITH Google search
     statusEl.textContent = "🤖 Getting AI answer...";
-    speak("Let me find that for you.");
+    speak("Searching and getting answer for you.");
     
+    // Open Google search immediately
+    const query = message.replace(/ /g, "+");
+    window.open(`https://www.google.com/search?q=${query}`, "_blank");
+    
+    // Also get AI answer and speak it
     getAIAnswer(message).then(answer => {
       if (answer) {
         console.log("🤖 AI Answer:", answer);
         document.getElementById('gyaanbot-response').textContent = answer;
-        speak(answer);
+        speak(answer); // VOICE ANSWER
       } else {
-        // Fallback to Google search if no API key
-        const query = message.replace(/ /g, "+");
-        window.open(`https://www.google.com/search?q=${query}`, "_blank");
-        speak("Opening search results");
+        speak("Google search opened for you");
       }
+      statusEl.textContent = "Listening continuously...";
     });
-    return; // Don't reset status immediately
+    return;
     
   } else if (message.includes("time")) {
     const time = new Date().toLocaleTimeString();
