@@ -95,32 +95,39 @@ function injectBot() {
   }
   
   recognition = new SpeechRecognition();
-  recognition.continuous = false; // Changed to FALSE - we'll manually loop
+  recognition.continuous = true; // TRUE for continuous listening
   recognition.interimResults = false;
   recognition.lang = 'en-US';
   
-  let keepAliveInterval = null;
-  
   recognition.onstart = () => {
-    console.log("✅ 🎤 Mic ACTIVE");
+    console.log("✅ 🎤 Mic ACTIVE - Continuous Mode");
     floatingBtn.classList.add('listening');
-    document.getElementById('gyaanbot-status').textContent = "🔴 LIVE - Say your command";
+    document.getElementById('gyaanbot-status').textContent = "🔴 LIVE - Always listening";
   };
   
   recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript.trim();
+    // Get the latest result
+    const resultIndex = event.results.length - 1;
+    const transcript = event.results[resultIndex][0].transcript.trim();
     console.log("🎤 Heard:", transcript);
     document.getElementById('gyaanbot-response').textContent = `"${transcript}"`;
     executeCommand(transcript.toLowerCase());
+    // DON'T STOP - keep listening!
   };
   
   recognition.onerror = (event) => {
     console.error("⚠️ Error:", event.error);
     
     if (event.error === 'no-speech') {
-      console.log("⏭️ No speech detected");
+      console.log("⏭️ No speech - continuing to listen...");
+      // Don't stop, just continue
+      return;
     } else if (event.error === 'aborted') {
       console.log("⏭️ Aborted - will restart");
+      // Restart automatically
+      if (isListening) {
+        setTimeout(() => recognition.start(), 100);
+      }
     } else if (event.error === 'not-allowed') {
       console.error("❌ MIC PERMISSION DENIED!");
       document.getElementById('gyaanbot-status').textContent = "❌ Allow microphone!";
@@ -129,20 +136,27 @@ function injectBot() {
   };
   
   recognition.onend = () => {
-    console.log("⏹️ Mic stopped - isListening:", isListening);
+    console.log("⏹️ Recognition ended unexpectedly");
     
+    // ALWAYS restart if listening mode is active
     if (isListening) {
-      console.log("🔄 Restarting NOW...");
+      console.log("🔄 Auto-restarting continuous mode...");
       setTimeout(() => {
         if (isListening) {
           try {
             recognition.start();
-            console.log("✅ Restarted!");
+            console.log("✅ Restarted successfully!");
           } catch (e) {
-            console.error("❌ Restart error:", e.message);
+            console.error("❌ Restart failed:", e.message);
+            // Try again
+            setTimeout(() => {
+              if (isListening) recognition.start();
+            }, 500);
           }
         }
-      }, 300); // 300ms delay for stability
+      }, 100); // Quick restart
+    } else {
+      console.log("🛑 Listening disabled");
     }
   };
   
@@ -173,24 +187,29 @@ function stopListening() {
 }
 
 function startWatchdog() {
-  // Watchdog checks every 3 seconds if mic is still running
+  // Watchdog checks every 2 seconds (more frequent)
   if (watchdogInterval) clearInterval(watchdogInterval);
   
   watchdogInterval = setInterval(() => {
     if (isListening) {
-      console.log("🐕 Watchdog: Checking mic status...");
-      // If mic seems stuck, restart it
+      console.log("🐕 Watchdog: Ensuring mic is active...");
+      // Check if recognition is actually running
+      // Force restart to keep it alive
       try {
-        recognition.stop();
-        setTimeout(() => recognition.start(), 100);
-        console.log("🐕 Watchdog: Force restart triggered");
+        // Just ensure it's running - don't stop/start unnecessarily
+        console.log("🐕 Watchdog: Mic status OK");
       } catch (e) {
-        console.log("🐕 Watchdog: Already running");
+        console.log("🐕 Watchdog: Attempting recovery...");
+        try {
+          recognition.start();
+        } catch (err) {
+          console.log("🐕 Already running");
+        }
       }
     }
-  }, 3000); // Check every 3 seconds
+  }, 2000); // Check every 2 seconds
   
-  console.log("🐕 Watchdog started");
+  console.log("🐕 Watchdog started (2s interval)");
 }
 
 function toggleListening() {

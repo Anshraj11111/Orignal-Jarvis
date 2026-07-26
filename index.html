@@ -355,7 +355,7 @@
     }
     
     const recognition = new SpeechRecognition();
-    recognition.continuous = false;
+    recognition.continuous = true; // CONTINUOUS MODE ENABLED
     recognition.lang = 'en-US';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
@@ -363,38 +363,69 @@
     let isListening = false; // Prevent multiple starts
 
     recognition.onstart = () => {
-      console.log("✅ Voice recognition started");
-      botStatus.textContent = "Listening...";
+      console.log("✅ Voice recognition started - Continuous Mode");
+      botStatus.textContent = "🔴 Listening continuously...";
       floatingBot.classList.add("listening");
     };
 
     recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
+      // Get latest result for continuous mode
+      const resultIndex = event.results.length - 1;
+      const transcript = event.results[resultIndex][0].transcript;
       console.log("🎤 Heard:", transcript);
       if (content) content.textContent = transcript;
       botResponse.textContent = `You said: "${transcript}"`;
       botStatus.textContent = "Processing...";
-      floatingBot.classList.remove("listening");
-      isListening = false;
       takeCommand(transcript.toLowerCase());
+      // Don't stop listening - continuous mode!
+      setTimeout(() => {
+        if (isListening) {
+          botStatus.textContent = "🔴 Listening...";
+        }
+      }, 2000);
     };
 
     recognition.onerror = (event) => {
       console.error("❌ Error:", event.error);
+      
+      if (event.error === 'no-speech') {
+        console.log("No speech detected, continuing...");
+        return; // Don't stop
+      }
+      
       botStatus.textContent = `Error: ${event.error}`;
       botResponse.textContent = event.error === 'not-allowed' 
         ? "Please allow microphone access!" 
         : "Error - Try again";
-      floatingBot.classList.remove("listening");
-      isListening = false;
+      
+      if (event.error === 'not-allowed') {
+        floatingBot.classList.remove("listening");
+        isListening = false;
+      }
     };
 
     recognition.onend = () => {
       console.log("⏹️ Recognition ended");
-      floatingBot.classList.remove("listening");
-      isListening = false;
-      if (botStatus.textContent === "Listening...") {
-        botStatus.textContent = "No speech detected";
+      
+      // Auto-restart if listening mode is still active
+      if (isListening) {
+        console.log("🔄 Auto-restarting continuous mode...");
+        setTimeout(() => {
+          if (isListening) {
+            try {
+              recognition.start();
+              console.log("✅ Restarted successfully");
+            } catch (e) {
+              console.error("❌ Restart failed:", e);
+              setTimeout(() => {
+                if (isListening) recognition.start();
+              }, 500);
+            }
+          }
+        }, 100); // Quick restart
+      } else {
+        floatingBot.classList.remove("listening");
+        botStatus.textContent = "Stopped";
       }
     };
 
