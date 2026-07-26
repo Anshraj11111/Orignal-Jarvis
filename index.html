@@ -418,7 +418,8 @@
     // Detect if mobile
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    recognition.continuous = !isMobile; // FALSE on mobile, TRUE on desktop
+    // TRUE on both desktop AND mobile for continuous listening
+    recognition.continuous = true;
     recognition.lang = 'en-US';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
@@ -426,14 +427,14 @@
     let isListening = false;
 
     recognition.onstart = () => {
-      console.log("✅ Voice recognition started" + (isMobile ? " - Mobile Mode" : " - Continuous Mode"));
-      botStatus.textContent = isMobile ? "🎤 Tap again for next command" : "🔴 Listening continuously...";
+      console.log("✅ Voice recognition started - Continuous Mode");
+      botStatus.textContent = "🔴 Listening continuously...";
       floatingBot.classList.add("listening");
     };
 
     recognition.onresult = (event) => {
       // Get latest result
-      const resultIndex = isMobile ? 0 : event.results.length - 1;
+      const resultIndex = event.results.length - 1;
       const transcript = event.results[resultIndex][0].transcript;
       console.log("🎤 Heard:", transcript);
       if (content) content.textContent = transcript;
@@ -441,20 +442,12 @@
       botStatus.textContent = "Processing...";
       takeCommand(transcript.toLowerCase());
       
-      // Mobile: Auto-stop after command
-      if (isMobile) {
-        setTimeout(() => {
-          isListening = false;
-          floatingBot.classList.remove("listening");
-          botStatus.textContent = "Tap mic for next command";
-        }, 2000);
-      } else {
-        setTimeout(() => {
-          if (isListening) {
-            botStatus.textContent = "🔴 Listening...";
-          }
-        }, 2000);
-      }
+      // Reset status after processing
+      setTimeout(() => {
+        if (isListening) {
+          botStatus.textContent = "🔴 Listening...";
+        }
+      }, 2000);
     };
 
     recognition.onerror = (event) => {
@@ -462,7 +455,7 @@
       
       if (event.error === 'no-speech') {
         console.log("No speech detected, continuing...");
-        if (!isMobile) return; // Continue on desktop
+        return; // Continue on all devices
       }
       
       botStatus.textContent = `Error: ${event.error}`;
@@ -479,8 +472,8 @@
     recognition.onend = () => {
       console.log("⏹️ Recognition ended");
       
-      // Desktop: Auto-restart
-      if (!isMobile && isListening) {
+      // Auto-restart for continuous listening on all devices
+      if (isListening) {
         console.log("🔄 Auto-restarting continuous mode...");
         setTimeout(() => {
           if (isListening) {
@@ -496,9 +489,7 @@
           }
         }, 100);
       } else {
-        // Mobile: Stop and wait for next tap
         floatingBot.classList.remove("listening");
-        isListening = false;
         botStatus.textContent = "Tap mic to speak";
       }
     };
@@ -593,8 +584,11 @@
     function takeCommand(message) {
       botStatus.textContent = "Ready";
       
+      // Convert to lowercase once at the start
+      const lowerMsg = message.toLowerCase();
+      
       // Calculator
-      if (message.includes("calculate") || (message.includes("what is") && (message.includes("plus") || message.includes("minus") || message.includes("times") || message.includes("divided")))) {
+      if (lowerMsg.includes("calculate") || (lowerMsg.includes("what is") && (lowerMsg.includes("plus") || lowerMsg.includes("minus") || lowerMsg.includes("times") || lowerMsg.includes("divided")))) {
         const result = calculateMath(message);
         if (result !== null) {
           speak(`The answer is ${result}`);
@@ -604,7 +598,7 @@
       }
       
       // Jokes
-      if (message.includes("tell me a joke") || message.includes("joke")) {
+      if (lowerMsg.includes("tell me a joke") || lowerMsg.includes("joke")) {
         const jokes = [
           "Why don't scientists trust atoms? Because they make up everything!",
           "Why did the computer go to the doctor? Because it had a virus!",
@@ -617,7 +611,7 @@
       }
       
       // Fun facts
-      if (message.includes("tell me a fact") || message.includes("fun fact") || message.includes("fact")) {
+      if (lowerMsg.includes("tell me a fact") || lowerMsg.includes("fun fact") || lowerMsg.includes("fact")) {
         const facts = [
           "Honey never spoils. Archaeologists have found 3000 year old honey!",
           "A group of flamingos is called a flamboyance.",
@@ -630,14 +624,12 @@
       }
       
       // Help
-      if (message.includes("help") || message.includes("what can you do")) {
+      if (lowerMsg.includes("help") || lowerMsg.includes("what can you do")) {
         speak("I can calculate math, tell jokes and facts, open websites, play music, answer questions, and much more!");
         return;
       }
       
       // Real-time Wikipedia answers for ANY question
-      const lowerMsg = message.toLowerCase(); // DEFINE IT HERE
-      
       if (lowerMsg.includes("what is") || lowerMsg.includes("who is") || lowerMsg.includes("what are") || lowerMsg.includes("tell me about")) {
         speak("Let me search that for you.");
         
@@ -666,31 +658,31 @@
         return;
       }
       
-      if (message.includes("what is ai") || message.includes("artificial intelligence")) {
+      if (lowerMsg.includes("what is ai") || lowerMsg.includes("artificial intelligence")) {
         const answer = "Artificial Intelligence is computer technology that allows machines to learn, solve problems, and do tasks like humans.";
         speak(answer);
         window.open("https://www.google.com/search?q=what+is+AI", "_blank");
         return;
       }
       
-      if (message.includes("what is python")) {
+      if (lowerMsg.includes("what is python")) {
         const answer = "Python is a popular programming language known for being easy to learn. It's widely used for web development, data science, and artificial intelligence.";
         speak(answer);
         window.open("https://www.google.com/search?q=what+is+python", "_blank");
         return;
       }
       
-      if (message.includes("what is computer")) {
+      if (lowerMsg.includes("what is computer")) {
         const answer = "A computer is an electronic device that processes data and performs tasks. It can store, retrieve, and process information quickly.";
         speak(answer);
         window.open("https://www.google.com/search?q=what+is+computer", "_blank");
         return;
       }
       
-      if (message.includes("hello") || message.includes("hey")) {
+      if (lowerMsg.includes("hello") || lowerMsg.includes("hey")) {
         speak("Hello Sir, how may I assist you?");
         
-      } else if (message.includes("music off") || message.includes("stop music") || message.includes("pause music")) {
+      } else if (lowerMsg.includes("music off") || lowerMsg.includes("stop music") || lowerMsg.includes("pause music")) {
         // Close music tab if open
         if (currentMusicTab && !currentMusicTab.closed) {
           currentMusicTab.close();
@@ -700,64 +692,64 @@
           speak("No music is currently playing");
         }
         
-      } else if (message.includes("play music") || message.includes("play punjabi music")) {
+      } else if (lowerMsg.includes("play music") || lowerMsg.includes("play punjabi music")) {
         currentMusicTab = window.open("https://www.youtube.com/watch?v=w9Qo6p4XsXE", "_blank");
         speak("Playing music...");
         
-      } else if (message.includes("convert currency")) {
+      } else if (lowerMsg.includes("convert currency")) {
         const match = message.match(/convert (\d+(\.\d+)?) (\w{3}) to (\w{3})/);
         if (match)
           convertCurrency(match[1], match[3].toUpperCase(), match[4].toUpperCase());
         else speak("Please say like: convert 100 USD to INR.");
-      } else if (message.includes("weather in")) {
-        const loc = message.replace("weather in", "").trim();
+      } else if (lowerMsg.includes("weather in")) {
+        const loc = message.replace(/weather in/i, "").trim();
         getWeather(loc);
-      } else if (message.includes("open google")) {
+      } else if (lowerMsg.includes("open google")) {
         window.open("https://google.com", "_blank");
         speak("Opening Google...");
-      } else if (message.includes("open youtube")) {
+      } else if (lowerMsg.includes("open youtube")) {
         window.open("https://youtube.com", "_blank");
         speak("Opening YouTube...");
-      } else if (message.includes("open whatsapp")) {
+      } else if (lowerMsg.includes("open whatsapp")) {
         window.open("https://web.whatsapp.com/", "_blank");
         speak("Opening WhatsApp...");
-      } else if (message.includes("chat with mom")) {
+      } else if (lowerMsg.includes("chat with mom")) {
         window.open("https://wa.me/916232899904", "_blank");
         speak("Opening chat with Mom...");
-      } else if (message.includes("call mom")) {
+      } else if (lowerMsg.includes("call mom")) {
         window.open("https://wa.me/916232899904?call=true", "_blank");
         speak("Calling Mom...");
-      } else if (message.includes("open github")) {
+      } else if (lowerMsg.includes("open github")) {
         window.open("https://github.com/Anshraj11111", "_blank");
         speak("Opening your GitHub...");
-      } else if (message.includes("open my channel")) {
+      } else if (lowerMsg.includes("open my channel")) {
         window.open(
           "https://youtube.com/@keystrokescoffee?si=q1ovNa5UyW87GknN",
           "_blank"
         );
         speak("Opening your YouTube channel...");
       } else if (
-        message.includes("what is") ||
-        message.includes("who is") ||
-        message.includes("what are")
+        lowerMsg.includes("what is") ||
+        lowerMsg.includes("who is") ||
+        lowerMsg.includes("what are")
       ) {
         const q = message.replace(/ /g, "+");
         window.open(`https://www.google.com/search?q=${q}`, "_blank");
         speak("Here’s what I found on Google.");
-      } else if (message.includes("wikipedia")) {
-        const q = message.replace("wikipedia", "").trim();
+      } else if (lowerMsg.includes("wikipedia")) {
+        const q = message.replace(/wikipedia/i, "").trim();
         window.open(`https://en.wikipedia.org/wiki/${q}`, "_blank");
         speak("Here’s the Wikipedia result.");
-      } else if (message.includes("time")) {
+      } else if (lowerMsg.includes("time")) {
         const time = new Date().toLocaleTimeString();
         speak(`The time is ${time}`);
-      } else if (message.includes("date")) {
+      } else if (lowerMsg.includes("date")) {
         const date = new Date().toLocaleDateString();
         speak(`Today's date is ${date}`);
-      } else if (message.includes("direction to")) {
-        const destination = message.replace("direction to", "").trim();
+      } else if (lowerMsg.includes("direction to")) {
+        const destination = message.replace(/direction to/i, "").trim();
         getDirections(destination);
-      } else if (message.includes("go back")) {
+      } else if (lowerMsg.includes("go back")) {
         window.location.href = "index.html";
         speak("Going back to the main page...");
       } else {
