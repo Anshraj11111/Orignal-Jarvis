@@ -7,7 +7,7 @@ let lastHeardTime = Date.now();
 let currentMusicTab = null; // Track music tab for control
 
 // Gemini API Configuration
-const GEMINI_API_KEY = "AIzaSyAQ.Ab8RN6JecYdxCyf-eJ0ojb_D3ZJO8Z7qDgucRSXqmkGd_iSj2Q";
+const GEMINI_API_KEY = "AIzaSyAQAb8RN6JecYdxCyf-eJ0ojb_D3ZJO8Z7qDgucRSXqmkGd_iSj2Q";
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
 
 function speak(text) {
@@ -17,6 +17,34 @@ function speak(text) {
   utterance.volume = 1;
   utterance.lang = "en-US";
   window.speechSynthesis.speak(utterance);
+}
+
+function calculateMath(expression) {
+  try {
+    // Extract numbers and operation
+    const match = expression.match(/(\d+\.?\d*)\s*(plus|add|\+|minus|subtract|\-|times|multiply|\*|x|divided by|divide|\/)\s*(\d+\.?\d*)/i);
+    
+    if (!match) return null;
+    
+    const num1 = parseFloat(match[1]);
+    const operation = match[2].toLowerCase();
+    const num2 = parseFloat(match[3]);
+    let result;
+    
+    if (operation.includes('plus') || operation.includes('add') || operation === '+') {
+      result = num1 + num2;
+    } else if (operation.includes('minus') || operation.includes('subtract') || operation === '-') {
+      result = num1 - num2;
+    } else if (operation.includes('times') || operation.includes('multiply') || operation === '*' || operation === 'x') {
+      result = num1 * num2;
+    } else if (operation.includes('divided') || operation.includes('divide') || operation === '/') {
+      result = num1 / num2;
+    }
+    
+    return result;
+  } catch (e) {
+    return null;
+  }
 }
 
 async function getAIAnswer(question) {
@@ -263,18 +291,71 @@ function executeCommand(message) {
   
   console.log("🔧 Executing:", message);
   
+  // Calculator commands
+  if (message.includes("calculate") || message.includes("what is") && (message.includes("plus") || message.includes("minus") || message.includes("times") || message.includes("divided"))) {
+    const result = calculateMath(message);
+    if (result !== null) {
+      speak(`The answer is ${result}`);
+      document.getElementById('gyaanbot-response').textContent = `= ${result}`;
+      return;
+    }
+  }
+  
+  // Joke command
+  if (message.includes("tell me a joke") || message.includes("joke")) {
+    const jokes = [
+      "Why don't scientists trust atoms? Because they make up everything!",
+      "Why did the computer go to the doctor? Because it had a virus!",
+      "What do you call a bear with no teeth? A gummy bear!",
+      "Why don't programmers like nature? It has too many bugs!",
+      "What's a computer's favorite snack? Microchips!"
+    ];
+    const joke = jokes[Math.floor(Math.random() * jokes.length)];
+    speak(joke);
+    document.getElementById('gyaanbot-response').textContent = joke;
+    return;
+  }
+  
+  // Fun fact command
+  if (message.includes("tell me a fact") || message.includes("fun fact") || message.includes("fact")) {
+    const facts = [
+      "Honey never spoils. Archaeologists have found 3000 year old honey in Egyptian tombs that's still edible!",
+      "A group of flamingos is called a flamboyance.",
+      "Octopuses have three hearts and blue blood.",
+      "Bananas are berries, but strawberries aren't!",
+      "The Eiffel Tower can be 15 cm taller during summer due to heat expansion."
+    ];
+    const fact = facts[Math.floor(Math.random() * facts.length)];
+    speak(fact);
+    document.getElementById('gyaanbot-response').textContent = fact;
+    return;
+  }
+  
+  // Help command
+  if (message.includes("help") || message.includes("what can you do") || message.includes("commands")) {
+    const helpText = "I can calculate math, tell jokes and facts, open websites, play music, answer questions, tell time and date, and much more!";
+    speak(helpText);
+    document.getElementById('gyaanbot-response').textContent = helpText;
+    return;
+  }
+  
   if (message.includes("hello") || message.includes("hey") || message.includes("jarvis")) {
     speak("Hello Sir, I'm listening continuously.");
     
-  } else if (message.includes("music off") || message.includes("stop music") || message.includes("pause music")) {
-    // Close music tab
-    if (currentMusicTab && !currentMusicTab.closed) {
-      currentMusicTab.close();
-      currentMusicTab = null;
-      speak("Music stopped");
-    } else {
-      speak("No music is currently playing");
-    }
+  } else if (message.includes("music off") || message.includes("stop music") || message.includes("pause music") || message.includes("close music")) {
+    // Try to close music tab
+    speak("I cannot directly close tabs due to browser security, but I'll try to help.");
+    
+    // Alternative: Send message to all tabs to close if they're music
+    chrome.tabs.query({}, (tabs) => {
+      tabs.forEach(tab => {
+        if (tab.url && tab.url.includes("youtube.com/watch")) {
+          chrome.tabs.remove(tab.id);
+        }
+      });
+    });
+    
+    speak("Closing YouTube music tabs");
     
   } else if (message.includes("stop listening") || message.includes("deactivate") || message.includes("stop jarvis")) {
     speak("Stopping continuous mode.");
