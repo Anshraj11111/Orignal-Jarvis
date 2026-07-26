@@ -621,6 +621,8 @@
       }
       
       // Real-time Wikipedia answers for ANY question
+      const lowerMsg = message.toLowerCase(); // DEFINE IT HERE
+      
       if (lowerMsg.includes("what is") || lowerMsg.includes("who is") || lowerMsg.includes("what are") || lowerMsg.includes("tell me about")) {
         speak("Let me search that for you.");
         
