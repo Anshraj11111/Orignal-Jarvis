@@ -642,6 +642,7 @@
     }
 
     let currentMusicTab = null; // Track music tab
+    let robotMode = true; // ROBOT MODE - keeps mic always on, minimal tab opening
 
     function takeCommand(message) {
       botStatus.textContent = "Ready";
@@ -691,22 +692,38 @@
         return;
       }
       
+      // Robot mode toggle
+      if (lowerMsg.includes("robot mode on") || lowerMsg.includes("enable robot mode")) {
+        robotMode = true;
+        speak("Robot mode enabled. Mic will stay continuously on, websites won't open.");
+        botResponse.textContent = "🤖 ROBOT MODE: ON";
+        return;
+      }
+      
+      if (lowerMsg.includes("robot mode off") || lowerMsg.includes("disable robot mode")) {
+        robotMode = false;
+        speak("Robot mode disabled. Normal mode with website opening.");
+        botResponse.textContent = "💻 NORMAL MODE: ON";
+        return;
+      }
+      
       // Real-time Wikipedia answers for ANY question
       if (lowerMsg.includes("what is") || lowerMsg.includes("who is") || lowerMsg.includes("what are") || lowerMsg.includes("tell me about")) {
-        speak("Let me search that for you.");
+        speak("Searching for answer...");
         
-        // Open Google immediately
-        const query = message.replace(/ /g, "+");
-        window.open(`https://www.google.com/search?q=${query}`, "_blank");
-        
-        // Get Wikipedia answer and speak it
+        // Get Wikipedia answer and speak it - NO GOOGLE REDIRECT for robot mode
         getWikipediaAnswer(message).then(answer => {
           if (answer) {
             console.log("🔊 Speaking Wikipedia answer");
             speak(answer);
             botResponse.textContent = answer;
           } else {
-            speak("I've opened the search results for you.");
+            speak("Sorry, I couldn't find an answer. Let me search online.");
+            // Only open Google if Wikipedia fails - and use noopener to prevent focus loss
+            setTimeout(() => {
+              const query = message.replace(/ /g, "+");
+              window.open(`https://www.google.com/search?q=${query}`, "_blank", "noopener,noreferrer");
+            }, 100);
           }
         });
         
@@ -716,28 +733,28 @@
       if (lowerMsg.includes("who is") && (lowerMsg.includes("pm") || lowerMsg.includes("prime minister"))) {
         const answer = "Narendra Modi is the Prime Minister of India. He took office on May 26, 2014, and is currently serving his third consecutive term.";
         speak(answer);
-        window.open("https://www.google.com/search?q=Prime+Minister+of+India", "_blank");
+        // Don't open Google - just speak
         return;
       }
       
       if (lowerMsg.includes("what is ai") || lowerMsg.includes("artificial intelligence")) {
         const answer = "Artificial Intelligence is computer technology that allows machines to learn, solve problems, and do tasks like humans.";
         speak(answer);
-        window.open("https://www.google.com/search?q=what+is+AI", "_blank");
+        // Don't open Google - just speak
         return;
       }
       
       if (lowerMsg.includes("what is python")) {
         const answer = "Python is a popular programming language known for being easy to learn. It's widely used for web development, data science, and artificial intelligence.";
         speak(answer);
-        window.open("https://www.google.com/search?q=what+is+python", "_blank");
+        // Don't open Google - just speak
         return;
       }
       
       if (lowerMsg.includes("what is computer")) {
         const answer = "A computer is an electronic device that processes data and performs tasks. It can store, retrieve, and process information quickly.";
         speak(answer);
-        window.open("https://www.google.com/search?q=what+is+computer", "_blank");
+        // Don't open Google - just speak
         return;
       }
       
@@ -755,8 +772,11 @@
         }
         
       } else if (lowerMsg.includes("play music") || lowerMsg.includes("play punjabi music")) {
-        currentMusicTab = window.open("https://www.youtube.com/watch?v=w9Qo6p4XsXE", "_blank");
         speak("Playing music...");
+        // Music can open in background without stealing focus on mobile
+        currentMusicTab = window.open("https://www.youtube.com/watch?v=w9Qo6p4XsXE", "_blank", "noopener,noreferrer");
+        // Return focus to main window immediately
+        window.focus();
         
       } else if (lowerMsg.includes("convert currency")) {
         const match = message.match(/convert (\d+(\.\d+)?) (\w{3}) to (\w{3})/);
@@ -767,40 +787,54 @@
         const loc = message.replace(/weather in/i, "").trim();
         getWeather(loc);
       } else if (lowerMsg.includes("open google")) {
-        window.open("https://google.com", "_blank");
         speak("Opening Google...");
+        if (!robotMode) {
+          window.open("https://google.com", "_blank", "noopener");
+        }
       } else if (lowerMsg.includes("open youtube")) {
-        window.open("https://youtube.com", "_blank");
         speak("Opening YouTube...");
+        if (!robotMode) {
+          window.open("https://youtube.com", "_blank", "noopener");
+        }
       } else if (lowerMsg.includes("open whatsapp")) {
-        window.open("https://web.whatsapp.com/", "_blank");
         speak("Opening WhatsApp...");
+        if (!robotMode) {
+          window.open("https://web.whatsapp.com/", "_blank", "noopener");
+        }
       } else if (lowerMsg.includes("chat with mom")) {
-        window.open("https://wa.me/916232899904", "_blank");
         speak("Opening chat with Mom...");
+        if (!robotMode) {
+          window.open("https://wa.me/916232899904", "_blank", "noopener");
+        }
       } else if (lowerMsg.includes("call mom")) {
-        window.open("https://wa.me/916232899904?call=true", "_blank");
         speak("Calling Mom...");
+        if (!robotMode) {
+          window.open("https://wa.me/916232899904?call=true", "_blank", "noopener");
+        }
       } else if (lowerMsg.includes("open github")) {
-        window.open("https://github.com/Anshraj11111", "_blank");
         speak("Opening your GitHub...");
+        if (!robotMode) {
+          window.open("https://github.com/Anshraj11111", "_blank", "noopener");
+        }
       } else if (lowerMsg.includes("open my channel")) {
-        window.open(
-          "https://youtube.com/@keystrokescoffee?si=q1ovNa5UyW87GknN",
-          "_blank"
-        );
         speak("Opening your YouTube channel...");
+        if (!robotMode) {
+          window.open(
+            "https://youtube.com/@keystrokescoffee?si=q1ovNa5UyW87GknN",
+            "_blank", "noopener"
+          );
+        }
       } else if (
         lowerMsg.includes("what is") ||
         lowerMsg.includes("who is") ||
         lowerMsg.includes("what are")
       ) {
         const q = message.replace(/ /g, "+");
-        window.open(`https://www.google.com/search?q=${q}`, "_blank");
+        window.open(`https://www.google.com/search?q=${q}`, "_blank", "noopener");
         speak("Here’s what I found on Google.");
       } else if (lowerMsg.includes("wikipedia")) {
         const q = message.replace(/wikipedia/i, "").trim();
-        window.open(`https://en.wikipedia.org/wiki/${q}`, "_blank");
+        window.open(`https://en.wikipedia.org/wiki/${q}`, "_blank", "noopener");
         speak("Here’s the Wikipedia result.");
       } else if (lowerMsg.includes("time")) {
         const time = new Date().toLocaleTimeString();
@@ -817,7 +851,7 @@
       } else {
         window.open(
           `https://www.google.com/search?q=${message.replace(/ /g, "+")}`,
-          "_blank"
+          "_blank", "noopener"
         );
         speak(`Here’s what I found for ${message}`);
       }
