@@ -425,14 +425,44 @@
     recognition.maxAlternatives = 1;
     
     let isListening = false;
+    let recognitionActive = false;
+    let watchdogTimer = null;
+    let lastHeardTime = Date.now();
+
+    // Watchdog function - ensures mic ALWAYS stays on
+    function startWatchdog() {
+      if (watchdogTimer) clearInterval(watchdogTimer);
+      
+      watchdogTimer = setInterval(() => {
+        if (isListening && !recognitionActive) {
+          console.log("⚠️ Watchdog: Mic stopped! Restarting...");
+          try {
+            recognition.start();
+            console.log("✅ Watchdog restart successful");
+          } catch (e) {
+            console.log("Watchdog: Already running or restarting");
+          }
+        }
+      }, 2000); // Check every 2 seconds
+    }
+
+    function stopWatchdog() {
+      if (watchdogTimer) {
+        clearInterval(watchdogTimer);
+        watchdogTimer = null;
+      }
+    }
 
     recognition.onstart = () => {
+      recognitionActive = true;
       console.log("✅ Voice recognition started - Continuous Mode");
       botStatus.textContent = "🔴 Listening continuously...";
       floatingBot.classList.add("listening");
     };
 
     recognition.onresult = (event) => {
+      lastHeardTime = Date.now();
+      
       // Get latest result
       const resultIndex = event.results.length - 1;
       const transcript = event.results[resultIndex][0].transcript;
@@ -447,32 +477,40 @@
         if (isListening) {
           botStatus.textContent = "🔴 Listening...";
         }
-      }, 2000);
+      }, 1500);
     };
 
     recognition.onerror = (event) => {
       console.error("❌ Error:", event.error);
+      recognitionActive = false;
       
       if (event.error === 'no-speech') {
         console.log("No speech detected, continuing...");
-        return; // Continue on all devices
+        return; // Don't stop, continue listening
+      }
+      
+      if (event.error === 'aborted') {
+        console.log("Recognition aborted, will restart...");
+        return;
       }
       
       botStatus.textContent = `Error: ${event.error}`;
       botResponse.textContent = event.error === 'not-allowed' 
         ? "Please allow microphone access!" 
-        : "Error - Try again";
+        : "Listening...";
       
       if (event.error === 'not-allowed') {
         floatingBot.classList.remove("listening");
         isListening = false;
+        stopWatchdog();
       }
     };
 
     recognition.onend = () => {
       console.log("⏹️ Recognition ended");
+      recognitionActive = false;
       
-      // Auto-restart for continuous listening on all devices
+      // Auto-restart IMMEDIATELY for continuous listening
       if (isListening) {
         console.log("🔄 Auto-restarting continuous mode...");
         setTimeout(() => {
@@ -482,15 +520,23 @@
               console.log("✅ Restarted successfully");
             } catch (e) {
               console.error("❌ Restart failed:", e);
+              // Try again after delay
               setTimeout(() => {
-                if (isListening) recognition.start();
-              }, 500);
+                if (isListening) {
+                  try {
+                    recognition.start();
+                  } catch (err) {
+                    console.log("Still restarting...");
+                  }
+                }
+              }, 300);
             }
           }
-        }, 100);
+        }, 50); // Faster restart - 50ms instead of 100ms
       } else {
         floatingBot.classList.remove("listening");
         botStatus.textContent = "Tap mic to speak";
+        stopWatchdog();
       }
     };
 
@@ -500,6 +546,7 @@
         if (isListening) return; // Prevent double start
         if (content) content.textContent = "Listening...";
         isListening = true;
+        startWatchdog(); // Start watchdog
         recognition.start();
       });
     }
@@ -508,16 +555,30 @@
     floatingBot.addEventListener("click", () => {
       console.log("🔵 Floating button clicked, isListening:", isListening);
       
+      // Always show panel
+      botPanel.classList.add("active");
+      
       if (isListening) {
-        // Already listening, just toggle panel
-        botPanel.classList.toggle("active");
+        // Stop continuous mode
+        console.log("🛑 Stopping continuous mode");
+        isListening = false;
+        stopWatchdog();
+        try {
+          recognition.stop();
+        } catch (e) {
+          console.log("Already stopped");
+        }
+        floatingBot.classList.remove("listening");
+        botStatus.textContent = "Stopped. Tap to restart";
+        botResponse.textContent = "Mic is OFF - Tap button to turn ON";
         return;
       }
       
-      botPanel.classList.add("active");
+      // Start continuous mode
       botStatus.textContent = "Starting...";
       botResponse.textContent = "Speak now...";
       isListening = true;
+      startWatchdog(); // Start watchdog
       
       try {
         recognition.start();
@@ -526,6 +587,7 @@
         console.error("❌ Start failed:", e);
         botStatus.textContent = "Error starting mic";
         isListening = false;
+        stopWatchdog();
       }
     });
 
