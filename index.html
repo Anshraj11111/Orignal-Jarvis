@@ -306,9 +306,40 @@
     const botResponse = document.getElementById("botResponse");
     const botStatus = document.getElementById("botStatus");
     const textInput = document.getElementById("textInput");
-    const WEATHER_API_KEY = "YOUR_OPENWEATHERMAP_API_KEY"; // <-- Replace with your key
-    const GEMINI_API_KEY = "AIzaSyAQAb8RN6JecYdxCyf-eJ0ojb_D3ZJO8Z7qDgucRSXqmkGd_iSj2Q";
-    const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
+    const WEATHER_API_KEY = "YOUR_OPENWEATHERMAP_API_KEY";
+
+    async function getWikipediaAnswer(question) {
+      try {
+        console.log("📚 Searching Wikipedia for:", question);
+        
+        // Extract main topic from question
+        let searchTerm = question
+          .replace(/what is|who is|what are|tell me about|tell me who/gi, '')
+          .trim();
+        
+        console.log("🔍 Search term:", searchTerm);
+        
+        // Wikipedia API
+        const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchTerm)}`;
+        const response = await fetch(url);
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.extract) {
+            // Get first 2-3 sentences
+            const sentences = data.extract.split('. ').slice(0, 2).join('. ') + '.';
+            console.log("✅ Wikipedia answer found:", sentences);
+            return sentences;
+          }
+        }
+        
+        console.log("❌ No Wikipedia answer");
+        return null;
+      } catch (error) {
+        console.error("Wikipedia API error:", error);
+        return null;
+      }
+    }
 
     // Text input handler
     textInput.addEventListener("keypress", (e) => {
@@ -365,52 +396,6 @@
       if (hour < 12) speak("Good morning Boss!");
       else if (hour < 17) speak("Good afternoon Master!");
       else speak("Good evening Sir!");
-    }
-
-    async function getAIAnswer(question) {
-      console.log("🤖 Requesting AI answer for:", question);
-      
-      if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
-        console.error("❌ API Key not configured!");
-        return null;
-      }
-      
-      console.log("✅ API Key found, making request...");
-      
-      try {
-        const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: `Answer this question in 2-3 short sentences: ${question}`
-              }]
-            }]
-          })
-        });
-        
-        console.log("📡 API Response status:", response.status);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("❌ API Error Response:", errorText);
-          return null;
-        }
-        
-        const data = await response.json();
-        console.log("📦 API Data received");
-        
-        if (data.candidates && data.candidates[0]) {
-          const answer = data.candidates[0].content.parts[0].text;
-          console.log("✅ AI Answer extracted:", answer);
-          return answer;
-        }
-      } catch (error) {
-        console.error("❌ AI API Error:", error);
-      }
-      
-      return null;
     }
 
     window.addEventListener("load", () => {
@@ -635,8 +620,29 @@
         return;
       }
       
-      // Built-in Q&A for exhibition
-      if (message.includes("who is") && (message.includes("pm") || message.includes("prime minister"))) {
+      // Real-time Wikipedia answers for ANY question
+      if (lowerMsg.includes("what is") || lowerMsg.includes("who is") || lowerMsg.includes("what are") || lowerMsg.includes("tell me about")) {
+        speak("Let me search that for you.");
+        
+        // Open Google immediately
+        const query = message.replace(/ /g, "+");
+        window.open(`https://www.google.com/search?q=${query}`, "_blank");
+        
+        // Get Wikipedia answer and speak it
+        getWikipediaAnswer(message).then(answer => {
+          if (answer) {
+            console.log("🔊 Speaking Wikipedia answer");
+            speak(answer);
+            botResponse.textContent = answer;
+          } else {
+            speak("I've opened the search results for you.");
+          }
+        });
+        
+        return;
+      }
+      
+      if (lowerMsg.includes("who is") && (lowerMsg.includes("pm") || lowerMsg.includes("prime minister"))) {
         const answer = "Narendra Modi is the Prime Minister of India. He took office on May 26, 2014, and is currently serving his third consecutive term.";
         speak(answer);
         window.open("https://www.google.com/search?q=Prime+Minister+of+India", "_blank");
