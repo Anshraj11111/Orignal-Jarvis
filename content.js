@@ -378,42 +378,56 @@ function executeCommand(message) {
     window.open("https://github.com/Anshraj11111", "_blank");
     speak("Opening GitHub");
   } else if (message.includes("what is") || message.includes("who is") || message.includes("what are") || message.includes("tell me about")) {
+    console.log("🔍 Question detected:", message);
+    
     // Simple built-in answers for common questions
     const lowerMsg = message.toLowerCase();
+    console.log("🔍 Checking built-in answers for:", lowerMsg);
     let answer = null;
     
     // Common answers database
     if (lowerMsg.includes("pm") || lowerMsg.includes("prime minister")) {
       answer = "Narendra Modi is the Prime Minister of India. He took office on May 26, 2014, and is currently serving his third consecutive term.";
+      console.log("✅ Found PM answer");
     } else if (lowerMsg.includes("what is ai") || lowerMsg.includes("artificial intelligence")) {
-      answer = "Artificial Intelligence is computer technology that allows machines to learn, solve problems, and do tasks like humans. It uses data and algorithms to make smart decisions.";
-    } else if (lowerMsg.includes("india")) {
+      answer = "Artificial Intelligence is computer technology that allows machines to learn, solve problems, and do tasks like humans.";
+      console.log("✅ Found AI answer");
+    } else if (lowerMsg.includes("india") && !lowerMsg.includes("pm")) {
       answer = "India is a country in South Asia. It is the seventh largest country by area and the most populous country in the world.";
+      console.log("✅ Found India answer");
     } else if (lowerMsg.includes("python")) {
-      answer = "Python is a popular programming language known for being easy to learn. It's used for web development, data science, and artificial intelligence.";
+      answer = "Python is a popular programming language known for being easy to learn.";
+      console.log("✅ Found Python answer");
     } else if (lowerMsg.includes("computer")) {
-      answer = "A computer is an electronic device that processes data and performs tasks according to instructions. It can store, retrieve, and process information.";
+      answer = "A computer is an electronic device that processes data and performs tasks.";
+      console.log("✅ Found Computer answer");
+    } else {
+      console.log("❌ No built-in answer found");
     }
     
     // Open Google search
+    console.log("🌐 Opening Google search");
     const query = message.replace(/ /g, "+");
     window.open(`https://www.google.com/search?q=${query}`, "_blank");
     
     if (answer) {
       // Speak the built-in answer
+      console.log("🔊 Speaking answer:", answer);
       speak(answer);
       document.getElementById('gyaanbot-response').textContent = answer;
     } else {
-      // Try API, fallback to simple response
+      // Try API
+      console.log("🤖 Trying API...");
       speak("Let me search that for you.");
       
       getAIAnswer(message).then(aiAnswer => {
         if (aiAnswer) {
-          console.log("🤖 AI Answer:", aiAnswer);
+          console.log("🤖 AI Answer received:", aiAnswer);
           document.getElementById('gyaanbot-response').textContent = aiAnswer;
           speak(aiAnswer);
         } else {
-          speak("I've opened the search results for you.");
+          console.log("❌ No AI answer, using fallback");
+          speak("I have opened the search results for you.");
         }
       });
     }
