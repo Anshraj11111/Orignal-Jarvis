@@ -514,11 +514,28 @@
       );
     }
 
+    let currentMusicTab = null; // Track music tab
+
     function takeCommand(message) {
       botStatus.textContent = "Ready";
       
       if (message.includes("hello") || message.includes("hey")) {
         speak("Hello Sir, how may I assist you?");
+        
+      } else if (message.includes("music off") || message.includes("stop music") || message.includes("pause music")) {
+        // Close music tab if open
+        if (currentMusicTab && !currentMusicTab.closed) {
+          currentMusicTab.close();
+          currentMusicTab = null;
+          speak("Music stopped");
+        } else {
+          speak("No music is currently playing");
+        }
+        
+      } else if (message.includes("play music") || message.includes("play punjabi music")) {
+        currentMusicTab = window.open("https://www.youtube.com/watch?v=w9Qo6p4XsXE", "_blank");
+        speak("Playing music...");
+        
       } else if (message.includes("convert currency")) {
         const match = message.match(/convert (\d+(\.\d+)?) (\w{3}) to (\w{3})/);
         if (match)
@@ -533,9 +550,6 @@
       } else if (message.includes("open youtube")) {
         window.open("https://youtube.com", "_blank");
         speak("Opening YouTube...");
-      } else if (message.includes("play music")) {
-        window.open("https://www.youtube.com/watch?v=w9Qo6p4XsXE", "_blank");
-        speak("Playing music...");
       } else if (message.includes("open whatsapp")) {
         window.open("https://web.whatsapp.com/", "_blank");
         speak("Opening WhatsApp...");
@@ -554,9 +568,6 @@
           "_blank"
         );
         speak("Opening your YouTube channel...");
-      } else if (message.includes("play punjabi music")) {
-        window.open("https://www.youtube.com/watch?v=w9Qo6p4XsXE", "_blank");
-        speak("Playing music...");
       } else if (
         message.includes("what is") ||
         message.includes("who is") ||

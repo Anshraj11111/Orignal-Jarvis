@@ -4,6 +4,7 @@ let isListening = false;
 let recognition = null;
 let watchdogInterval = null;
 let lastHeardTime = Date.now();
+let currentMusicTab = null; // Track music tab for control
 
 // Gemini API Configuration
 const GEMINI_API_KEY = "AIzaSyAQ.Ab8RN6JecYdxCyf-eJ0ojb_D3ZJO8Z7qDgucRSXqmkGd_iSj2Q";
@@ -264,6 +265,17 @@ function executeCommand(message) {
   
   if (message.includes("hello") || message.includes("hey") || message.includes("jarvis")) {
     speak("Hello Sir, I'm listening continuously.");
+    
+  } else if (message.includes("music off") || message.includes("stop music") || message.includes("pause music")) {
+    // Close music tab
+    if (currentMusicTab && !currentMusicTab.closed) {
+      currentMusicTab.close();
+      currentMusicTab = null;
+      speak("Music stopped");
+    } else {
+      speak("No music is currently playing");
+    }
+    
   } else if (message.includes("stop listening") || message.includes("deactivate") || message.includes("stop jarvis")) {
     speak("Stopping continuous mode.");
     stopListening();
@@ -275,8 +287,9 @@ function executeCommand(message) {
     window.open("https://youtube.com", "_blank");
     speak("Opening YouTube");
   } else if (message.includes("play music") || message.includes("punjabi music")) {
-    window.open("https://www.youtube.com/watch?v=w9Qo6p4XsXE", "_blank");
+    currentMusicTab = window.open("https://www.youtube.com/watch?v=w9Qo6p4XsXE", "_blank");
     speak("Playing music");
+    
   } else if (message.includes("open whatsapp")) {
     window.open("https://web.whatsapp.com/", "_blank");
     speak("Opening WhatsApp");
