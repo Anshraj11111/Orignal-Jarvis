@@ -378,25 +378,47 @@ function executeCommand(message) {
     window.open("https://github.com/Anshraj11111", "_blank");
     speak("Opening GitHub");
   } else if (message.includes("what is") || message.includes("who is") || message.includes("what are") || message.includes("tell me about")) {
-    // AI-powered answer WITH Google search
-    statusEl.textContent = "🤖 Getting AI answer...";
-    speak("Searching and getting answer for you.");
+    // Simple built-in answers for common questions
+    const lowerMsg = message.toLowerCase();
+    let answer = null;
     
-    // Open Google search immediately
+    // Common answers database
+    if (lowerMsg.includes("pm") || lowerMsg.includes("prime minister")) {
+      answer = "Narendra Modi is the Prime Minister of India. He took office on May 26, 2014, and is currently serving his third consecutive term.";
+    } else if (lowerMsg.includes("what is ai") || lowerMsg.includes("artificial intelligence")) {
+      answer = "Artificial Intelligence is computer technology that allows machines to learn, solve problems, and do tasks like humans. It uses data and algorithms to make smart decisions.";
+    } else if (lowerMsg.includes("india")) {
+      answer = "India is a country in South Asia. It is the seventh largest country by area and the most populous country in the world.";
+    } else if (lowerMsg.includes("python")) {
+      answer = "Python is a popular programming language known for being easy to learn. It's used for web development, data science, and artificial intelligence.";
+    } else if (lowerMsg.includes("computer")) {
+      answer = "A computer is an electronic device that processes data and performs tasks according to instructions. It can store, retrieve, and process information.";
+    }
+    
+    // Open Google search
     const query = message.replace(/ /g, "+");
     window.open(`https://www.google.com/search?q=${query}`, "_blank");
     
-    // Also get AI answer and speak it
-    getAIAnswer(message).then(answer => {
-      if (answer) {
-        console.log("🤖 AI Answer:", answer);
-        document.getElementById('gyaanbot-response').textContent = answer;
-        speak(answer); // VOICE ANSWER
-      } else {
-        speak("Google search opened for you");
-      }
-      statusEl.textContent = "Listening continuously...";
-    });
+    if (answer) {
+      // Speak the built-in answer
+      speak(answer);
+      document.getElementById('gyaanbot-response').textContent = answer;
+    } else {
+      // Try API, fallback to simple response
+      speak("Let me search that for you.");
+      
+      getAIAnswer(message).then(aiAnswer => {
+        if (aiAnswer) {
+          console.log("🤖 AI Answer:", aiAnswer);
+          document.getElementById('gyaanbot-response').textContent = aiAnswer;
+          speak(aiAnswer);
+        } else {
+          speak("I've opened the search results for you.");
+        }
+      });
+    }
+    
+    statusEl.textContent = "Listening continuously...";
     return;
     
   } else if (message.includes("time")) {
