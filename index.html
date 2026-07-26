@@ -418,8 +418,8 @@
     // Detect if mobile
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    // TRUE on both desktop AND mobile for continuous listening
-    recognition.continuous = true;
+    // FALSE for better mobile control - we'll manually restart
+    recognition.continuous = false;
     recognition.lang = 'en-US';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
@@ -443,7 +443,7 @@
             console.log("Watchdog: Already running or restarting");
           }
         }
-      }, 2000); // Check every 2 seconds
+      }, 1000); // Check every 1 second (faster!)
     }
 
     function stopWatchdog() {
@@ -471,6 +471,21 @@
       botResponse.textContent = `You said: "${transcript}"`;
       botStatus.textContent = "Processing...";
       takeCommand(transcript.toLowerCase());
+      
+      // CRITICAL: Force immediate restart for continuous listening
+      // Don't wait for onend event - restart NOW
+      if (isListening) {
+        setTimeout(() => {
+          if (isListening && !recognitionActive) {
+            console.log("🔄 Force restart after command");
+            try {
+              recognition.start();
+            } catch (e) {
+              console.log("Already restarting...");
+            }
+          }
+        }, 500); // 500ms after hearing command, restart
+      }
       
       // Reset status after processing
       setTimeout(() => {
@@ -510,29 +525,27 @@
       console.log("⏹️ Recognition ended");
       recognitionActive = false;
       
-      // Auto-restart IMMEDIATELY for continuous listening
+      // AGGRESSIVE AUTO-RESTART - no delays, immediate restart
       if (isListening) {
-        console.log("🔄 Auto-restarting continuous mode...");
-        setTimeout(() => {
-          if (isListening) {
-            try {
-              recognition.start();
-              console.log("✅ Restarted successfully");
-            } catch (e) {
-              console.error("❌ Restart failed:", e);
-              // Try again after delay
-              setTimeout(() => {
-                if (isListening) {
-                  try {
-                    recognition.start();
-                  } catch (err) {
-                    console.log("Still restarting...");
-                  }
-                }
-              }, 300);
+        console.log("🔄 IMMEDIATE restart for continuous mode");
+        // Try multiple times to ensure restart
+        const attemptRestart = (attemptNum) => {
+          if (!isListening) return;
+          
+          try {
+            recognition.start();
+            console.log(`✅ Restart attempt ${attemptNum} successful`);
+          } catch (e) {
+            console.log(`❌ Attempt ${attemptNum} failed: ${e.message}`);
+            if (attemptNum < 5) {
+              // Try again up to 5 times
+              setTimeout(() => attemptRestart(attemptNum + 1), 100 * attemptNum);
             }
           }
-        }, 50); // Faster restart - 50ms instead of 100ms
+        };
+        
+        // Start first attempt immediately
+        attemptRestart(1);
       } else {
         floatingBot.classList.remove("listening");
         botStatus.textContent = "Tap mic to speak";
