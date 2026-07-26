@@ -720,54 +720,66 @@
         return;
       }
       
-      // Real-time Wikipedia answers for ANY question
-      if (lowerMsg.includes("what is") || lowerMsg.includes("who is") || lowerMsg.includes("what are") || lowerMsg.includes("tell me about")) {
-        speak("Searching for answer...");
-        
-        // Get Wikipedia answer and speak it - NO GOOGLE REDIRECT for robot mode
-        getWikipediaAnswer(message).then(answer => {
-          if (answer) {
-            console.log("🔊 Speaking Wikipedia answer");
-            speak(answer);
-            botResponse.textContent = answer;
-          } else {
-            speak("Sorry, I couldn't find an answer. Let me search online.");
-            // Only open Google if Wikipedia fails - and use noopener to prevent focus loss
-            setTimeout(() => {
-              const query = message.replace(/ /g, "+");
-              window.open(`https://www.google.com/search?q=${query}`, "_blank", "noopener,noreferrer");
-            }, 100);
-          }
-        });
-        
-        return;
-      }
-      
+      // SPECIFIC QUESTIONS FIRST (hardcoded answers - faster & reliable)
       if (lowerMsg.includes("who is") && (lowerMsg.includes("pm") || lowerMsg.includes("prime minister"))) {
         const answer = "Narendra Modi is the Prime Minister of India. He took office on May 26, 2014, and is currently serving his third consecutive term.";
         speak(answer);
-        // Don't open Google - just speak
+        botResponse.textContent = answer;
         return;
       }
       
       if (lowerMsg.includes("what is ai") || lowerMsg.includes("artificial intelligence")) {
         const answer = "Artificial Intelligence is computer technology that allows machines to learn, solve problems, and do tasks like humans.";
         speak(answer);
-        // Don't open Google - just speak
+        botResponse.textContent = answer;
         return;
       }
       
       if (lowerMsg.includes("what is python")) {
         const answer = "Python is a popular programming language known for being easy to learn. It's widely used for web development, data science, and artificial intelligence.";
         speak(answer);
-        // Don't open Google - just speak
+        botResponse.textContent = answer;
         return;
       }
       
       if (lowerMsg.includes("what is computer")) {
         const answer = "A computer is an electronic device that processes data and performs tasks. It can store, retrieve, and process information quickly.";
         speak(answer);
-        // Don't open Google - just speak
+        botResponse.textContent = answer;
+        return;
+      }
+      
+      // GENERIC QUESTIONS - Wikipedia (for everything else)
+      if (lowerMsg.includes("what is") || lowerMsg.includes("who is") || lowerMsg.includes("what are") || lowerMsg.includes("tell me about")) {
+        
+        // DON'T speak "searching" immediately - wait for answer
+        botResponse.textContent = "Searching Wikipedia...";
+        
+        // Get Wikipedia answer FIRST, THEN speak
+        getWikipediaAnswer(message).then(answer => {
+          if (answer) {
+            console.log("🔊 Speaking Wikipedia answer:", answer);
+            botResponse.textContent = answer;
+            speak(answer); // SPEAK THE ACTUAL ANSWER
+          } else {
+            // No Wikipedia answer - speak fallback
+            speak("Sorry, I couldn't find an answer on Wikipedia.");
+            botResponse.textContent = "No answer found";
+            
+            // Robot mode: DON'T open Google
+            if (!robotMode) {
+              setTimeout(() => {
+                const query = message.replace(/ /g, "+");
+                window.open(`https://www.google.com/search?q=${query}`, "_blank", "noopener,noreferrer");
+              }, 100);
+            }
+          }
+        }).catch(err => {
+          console.error("Wikipedia error:", err);
+          speak("Error searching for answer.");
+          botResponse.textContent = "Search error";
+        });
+        
         return;
       }
       
