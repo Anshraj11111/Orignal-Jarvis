@@ -859,9 +859,7 @@
         speak("Here’s what I found on Google.");
       } else if (lowerMsg.includes("wikipedia")) {
         const q = message.replace(/wikipedia/i, "").trim();
-        window.open(`https://en.wikipedia.org/wiki/${q}`, "_blank", "noopener");
-        speak("Here’s the Wikipedia result.");
-      } else if (lowerMsg.includes("time")) {
+        speak("ROBOT MODE - No redirect");
         const time = new Date().toLocaleTimeString();
         speak(`The time is ${time}`);
       } else if (lowerMsg.includes("date")) {
@@ -884,3 +882,5 @@
   </script>
 </body>
 </html>
+
+
