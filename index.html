@@ -635,6 +635,35 @@
         return;
       }
       
+      // Built-in Q&A for exhibition
+      if (message.includes("who is") && (message.includes("pm") || message.includes("prime minister"))) {
+        const answer = "Narendra Modi is the Prime Minister of India. He took office on May 26, 2014, and is currently serving his third consecutive term.";
+        speak(answer);
+        window.open("https://www.google.com/search?q=Prime+Minister+of+India", "_blank");
+        return;
+      }
+      
+      if (message.includes("what is ai") || message.includes("artificial intelligence")) {
+        const answer = "Artificial Intelligence is computer technology that allows machines to learn, solve problems, and do tasks like humans.";
+        speak(answer);
+        window.open("https://www.google.com/search?q=what+is+AI", "_blank");
+        return;
+      }
+      
+      if (message.includes("what is python")) {
+        const answer = "Python is a popular programming language known for being easy to learn. It's widely used for web development, data science, and artificial intelligence.";
+        speak(answer);
+        window.open("https://www.google.com/search?q=what+is+python", "_blank");
+        return;
+      }
+      
+      if (message.includes("what is computer")) {
+        const answer = "A computer is an electronic device that processes data and performs tasks. It can store, retrieve, and process information quickly.";
+        speak(answer);
+        window.open("https://www.google.com/search?q=what+is+computer", "_blank");
+        return;
+      }
+      
       if (message.includes("hello") || message.includes("hey")) {
         speak("Hello Sir, how may I assist you?");
         
