@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GyaanBot - Virtual Assistant</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>ðŸ¤–</text></svg>" />
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
@@ -63,93 +63,16 @@
       padding: 0 20px;
     }
 
-    .input {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 40vw;
-      min-width: 300px;
-      max-width: 90vw;
-      height: 50px;
-      border-radius: 25px;
-      background: rgb(202 253 255 / 50%);
-      padding: 0 5px;
-      gap: 10px;
-    }
-
-    @media (max-width: 768px) {
-      .input {
-        width: 85vw;
-        min-width: 280px;
-        height: 48px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .input {
-        width: 90vw;
-        min-width: 250px;
-        height: 45px;
-        border-radius: 20px;
-      }
-    }
-
-    .talk {
-      background: transparent;
-      outline: none;
-      border: none;
-      width: 50px;
-      height: 50px;
-      min-width: 50px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    @media (max-width: 480px) {
-      .talk {
-        width: 45px;
-        height: 45px;
-        min-width: 45px;
-      }
-    }
-
-    .talk i {
-      font-size: 20px;
-      color: #aed0d0;
-    }
-
-    .content {
-      color: #aed0d0;
-      font-size: 15px;
-      margin-left: 15px;
-      margin-right: 15px;
-      flex: 1;
-      text-align: left;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    @media (max-width: 480px) {
-      .content {
-        font-size: 13px;
-        margin-left: 10px;
-        margin-right: 10px;
-      }
-    }
-
     /* Floating Bot Button */
     .floating-bot {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      width: 70px;
+      position: relative;
+      width: auto;
+      min-width: 70px;
       height: 70px;
+      padding: 0 25px;
+      margin: 30px auto 0;
       background: linear-gradient(135deg, #00bcd4, #0097a7);
-      border-radius: 50%;
+      border-radius: 35px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -161,30 +84,45 @@
 
     @media (max-width: 768px) {
       .floating-bot {
-        width: 60px;
+        min-width: 60px;
         height: 60px;
-        bottom: 25px;
-        right: 25px;
+        padding: 0 20px;
+        margin: 25px auto 0;
+        border-radius: 30px;
       }
     }
 
     @media (max-width: 480px) {
       .floating-bot {
-        width: 55px;
+        min-width: 55px;
         height: 55px;
-        bottom: 20px;
-        right: 20px;
+        padding: 0 15px;
+        margin: 20px auto 0;
+        border-radius: 27px;
+      }
+      
+      .floating-bot span {
+        font-size: 13px !important;
       }
     }
 
     .floating-bot:hover {
-      transform: scale(1.1);
+      transform: scale(1.05);
       box-shadow: 0 6px 30px rgba(0, 188, 212, 0.7);
     }
 
     .floating-bot i {
       font-size: 28px;
       color: #fff;
+      flex-shrink: 0;
+    }
+    
+    .floating-bot span {
+      color: #fff;
+      font-size: 16px;
+      font-weight: 500;
+      white-space: nowrap;
+      margin-left: 10px;
     }
 
     .floating-bot.listening {
@@ -193,80 +131,9 @@
 
     @keyframes pulse {
       0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.15); }
+      50% { transform: scale(1.05); }
     }
 
-    /* Bot Panel */
-    .bot-panel {
-      position: fixed;
-      bottom: 120px;
-      right: 30px;
-      width: 350px;
-      max-width: calc(100vw - 60px);
-      background: rgba(0, 0, 0, 0.95);
-      border: 2px solid #00bcd4;
-      border-radius: 15px;
-      padding: 20px;
-      display: none;
-      z-index: 9998;
-      box-shadow: 0 8px 32px rgba(0, 188, 212, 0.3);
-    }
-
-    @media (max-width: 768px) {
-      .bot-panel {
-        width: 320px;
-        bottom: 105px;
-        right: 25px;
-        padding: 15px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .bot-panel {
-        width: calc(100vw - 50px);
-        bottom: 90px;
-        right: 20px;
-        left: 25px;
-        padding: 12px;
-      }
-    }
-
-    .bot-panel.active {
-      display: block;
-    }
-
-    .bot-response {
-      color: #00bcd4;
-      font-size: 14px;
-      margin-bottom: 15px;
-      min-height: 40px;
-      padding: 10px;
-      background: rgba(0, 188, 212, 0.1);
-      border-radius: 8px;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-      line-height: 1.4;
-    }
-
-    @media (max-width: 480px) {
-      .bot-response {
-        font-size: 12px;
-        padding: 8px;
-        min-height: 35px;
-      }
-    }
-
-    .bot-status {
-      color: #9eb9bb;
-      font-size: 12px;
-      text-align: center;
-    }
-
-    @media (max-width: 480px) {
-      .bot-status {
-        font-size: 11px;
-      }
-    }
   </style>
 </head>
 
@@ -277,47 +144,25 @@
         <img src="jarvis-jarvischatbot (1).gif" alt="image" />
       </div>
       <h1>GyaanBot</h1>
-      <p>I’m GyaanBot, your virtual assistant. How may I help you?</p>
-    </div>
-
-    <div class="input">
-      <button class="talk"><i class="fas fa-microphone-alt"></i></button>
-      <h1 class="content">Click here to speak</h1>
+      <p>I'm GyaanBot, your virtual assistant. How may I help you?</p>
+      <div class="floating-bot" id="floatingBot"><i class="fas fa-microphone-alt"></i><span>Click here to speak</span></div>
     </div>
   </section>
 
-  <!-- Floating Bot Button (Always Visible) -->
-  <div class="floating-bot" id="floatingBot">
-    <i class="fas fa-microphone-alt"></i>
-  </div>
-
-  <!-- Bot Panel (Shows responses) -->
-  <div class="bot-panel" id="botPanel">
-    <div class="bot-response" id="botResponse">Click the mic to speak...</div>
-    <div class="bot-status" id="botStatus">Ready</div>
-    <input type="text" id="textInput" placeholder="Or type command here..." style="width:100%; padding:10px; margin-top:10px; background:#111; border:1px solid #00bcd4; color:#00bcd4; border-radius:5px; font-size:14px;">
-  </div>
-
   <script >
-    const btn = document.querySelector(".talk");
-    const content = document.querySelector(".content");
     const floatingBot = document.getElementById("floatingBot");
-    const botPanel = document.getElementById("botPanel");
-    const botResponse = document.getElementById("botResponse");
-    const botStatus = document.getElementById("botStatus");
-    const textInput = document.getElementById("textInput");
     const WEATHER_API_KEY = "YOUR_OPENWEATHERMAP_API_KEY";
 
     async function getWikipediaAnswer(question) {
       try {
-        console.log("📚 Searching Wikipedia for:", question);
+        console.log("ðŸ“š Searching Wikipedia for:", question);
         
         // Extract main topic from question
         let searchTerm = question
           .replace(/what is|who is|what are|tell me about|tell me who/gi, '')
           .trim();
         
-        console.log("🔍 Search term:", searchTerm);
+        console.log("ðŸ” Search term:", searchTerm);
         
         // Wikipedia API
         const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchTerm)}`;
@@ -328,30 +173,18 @@
           if (data.extract) {
             // Get first 2-3 sentences
             const sentences = data.extract.split('. ').slice(0, 2).join('. ') + '.';
-            console.log("✅ Wikipedia answer found:", sentences);
+            console.log("âœ… Wikipedia answer found:", sentences);
             return sentences;
           }
         }
         
-        console.log("❌ No Wikipedia answer");
+        console.log("âŒ No Wikipedia answer");
         return null;
       } catch (error) {
         console.error("Wikipedia API error:", error);
         return null;
       }
     }
-
-    // Text input handler
-    textInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter" && textInput.value.trim()) {
-        const command = textInput.value.trim();
-        botResponse.textContent = `You typed: "${command}"`;
-        botStatus.textContent = "Processing...";
-        takeCommand(command.toLowerCase());
-        textInput.value = "";
-        setTimeout(() => botStatus.textContent = "Ready", 2000);
-      }
-    });
 
     function speak(text) {
       const utterance = new SpeechSynthesisUtterance(text);
@@ -360,9 +193,6 @@
       utterance.volume = 1;
       utterance.lang = "en-US";
       window.speechSynthesis.speak(utterance);
-      
-      // Show response in floating panel
-      botResponse.textContent = text;
     }
 
     function calculateMath(expression) {
@@ -435,10 +265,10 @@
       
       watchdogTimer = setInterval(() => {
         if (isListening && !recognitionActive) {
-          console.log("⚠️ Watchdog: Mic stopped! Restarting...");
+          console.log("âš ï¸ Watchdog: Mic stopped! Restarting...");
           try {
             recognition.start();
-            console.log("✅ Watchdog restart successful");
+            console.log("âœ… Watchdog restart successful");
           } catch (e) {
             console.log("Watchdog: Already running or restarting");
           }
@@ -455,8 +285,7 @@
 
     recognition.onstart = () => {
       recognitionActive = true;
-      console.log("✅ Voice recognition started - Continuous Mode");
-      botStatus.textContent = "🔴 Listening continuously...";
+      console.log("âœ… Voice recognition started - Continuous Mode");
       floatingBot.classList.add("listening");
     };
 
@@ -466,17 +295,14 @@
       // Get latest result
       const resultIndex = event.results.length - 1;
       const transcript = event.results[resultIndex][0].transcript;
-      console.log("🎤 Heard:", transcript);
-      if (content) content.textContent = transcript;
-      botResponse.textContent = `You said: "${transcript}"`;
-      botStatus.textContent = "Processing...";
+      console.log("ðŸŽ¤ Heard:", transcript);
       takeCommand(transcript.toLowerCase());
       
       // Mobile needs more aggressive restart after command
       if (isMobile) {
         setTimeout(() => {
           if (isListening) {
-            console.log("📱 Mobile: Force restart after command");
+            console.log("ðŸ“± Mobile: Force restart after command");
             try {
               recognition.stop(); // Stop first
               setTimeout(() => {
@@ -493,14 +319,12 @@
       
       // Reset status after processing
       setTimeout(() => {
-        if (isListening) {
-          botStatus.textContent = "🔴 Listening...";
-        }
+        // Status reset (no UI update needed)
       }, 1500);
     };
 
     recognition.onerror = (event) => {
-      console.error("❌ Error:", event.error);
+      console.error("âŒ Error:", event.error);
       recognitionActive = false;
       
       if (event.error === 'no-speech') {
@@ -511,7 +335,7 @@
           if (isListening && !recognitionActive) {
             try {
               recognition.start();
-              console.log("✅ Restarted after no-speech delay");
+              console.log("âœ… Restarted after no-speech delay");
             } catch (e) {
               console.log("Already running");
             }
@@ -525,10 +349,7 @@
         return;
       }
       
-      botStatus.textContent = `Error: ${event.error}`;
-      botResponse.textContent = event.error === 'not-allowed' 
-        ? "Please allow microphone access!" 
-        : "Listening...";
+      console.log(`Error: ${event.error}`);
       
       if (event.error === 'not-allowed') {
         floatingBot.classList.remove("listening");
@@ -538,21 +359,21 @@
     };
 
     recognition.onend = () => {
-      console.log("⏹️ Recognition ended");
+      console.log("â¹ï¸ Recognition ended");
       recognitionActive = false;
       
       // AGGRESSIVE AUTO-RESTART - no delays, immediate restart
       if (isListening) {
-        console.log("🔄 IMMEDIATE restart for continuous mode");
+        console.log("ðŸ”„ IMMEDIATE restart for continuous mode");
         // Try multiple times to ensure restart
         const attemptRestart = (attemptNum) => {
           if (!isListening) return;
           
           try {
             recognition.start();
-            console.log(`✅ Restart attempt ${attemptNum} successful`);
+            console.log(`âœ… Restart attempt ${attemptNum} successful`);
           } catch (e) {
-            console.log(`❌ Attempt ${attemptNum} failed: ${e.message}`);
+            console.log(`âŒ Attempt ${attemptNum} failed: ${e.message}`);
             if (attemptNum < 5) {
               // Try again up to 5 times
               setTimeout(() => attemptRestart(attemptNum + 1), 100 * attemptNum);
@@ -564,32 +385,17 @@
         attemptRestart(1);
       } else {
         floatingBot.classList.remove("listening");
-        botStatus.textContent = "Tap mic to speak";
         stopWatchdog();
       }
     };
 
-    // Main page button
-    if (btn) {
-      btn.addEventListener("click", () => {
-        if (isListening) return; // Prevent double start
-        if (content) content.textContent = "Listening...";
-        isListening = true;
-        startWatchdog(); // Start watchdog
-        recognition.start();
-      });
-    }
-
     // Floating bot button
     floatingBot.addEventListener("click", () => {
-      console.log("🔵 Floating button clicked, isListening:", isListening);
-      
-      // Always show panel
-      botPanel.classList.add("active");
+      console.log("ðŸ”µ Floating button clicked, isListening:", isListening);
       
       if (isListening) {
         // Stop continuous mode
-        console.log("🛑 Stopping continuous mode");
+        console.log("ðŸ›‘ Stopping continuous mode");
         isListening = false;
         stopWatchdog();
         try {
@@ -598,23 +404,18 @@
           console.log("Already stopped");
         }
         floatingBot.classList.remove("listening");
-        botStatus.textContent = "Stopped. Tap to restart";
-        botResponse.textContent = "Mic is OFF - Tap button to turn ON";
         return;
       }
       
       // Start continuous mode
-      botStatus.textContent = "Starting...";
-      botResponse.textContent = "Speak now...";
       isListening = true;
       startWatchdog(); // Start watchdog
       
       try {
         recognition.start();
-        console.log("🎙️ Recognition.start() called");
+        console.log("ðŸŽ™ï¸ Recognition.start() called");
       } catch (e) {
-        console.error("❌ Start failed:", e);
-        botStatus.textContent = "Error starting mic";
+        console.error("âŒ Start failed:", e);
         isListening = false;
         stopWatchdog();
       }
@@ -646,7 +447,7 @@
         const data = await res.json();
         const temp = data.main.temp;
         const desc = data.weather[0].description;
-        speak(`The temperature in ${location} is ${temp}°C with ${desc}.`);
+        speak(`The temperature in ${location} is ${temp}Â°C with ${desc}.`);
       } catch {
         speak("Error fetching weather data.");
       }
@@ -671,10 +472,8 @@
     }
 
     let currentMusicTab = null; // Track music tab
-    let robotMode = true; // ROBOT MODE - keeps mic always on, minimal tab opening
 
     function takeCommand(message) {
-      botStatus.textContent = "Ready";
       
       // Convert to lowercase once at the start
       const lowerMsg = message.toLowerCase();
@@ -684,7 +483,6 @@
         const result = calculateMath(message);
         if (result !== null) {
           speak(`The answer is ${result}`);
-          botResponse.textContent = `= ${result}`;
           return;
         }
       }
@@ -721,79 +519,52 @@
         return;
       }
       
-      // Robot mode toggle
-      if (lowerMsg.includes("robot mode on") || lowerMsg.includes("enable robot mode")) {
-        robotMode = true;
-        speak("Robot mode enabled. Mic will stay continuously on, websites won't open.");
-        botResponse.textContent = "🤖 ROBOT MODE: ON";
-        return;
-      }
-      
-      if (lowerMsg.includes("robot mode off") || lowerMsg.includes("disable robot mode")) {
-        robotMode = false;
-        speak("Robot mode disabled. Normal mode with website opening.");
-        botResponse.textContent = "💻 NORMAL MODE: ON";
-        return;
-      }
-      
       // SPECIFIC QUESTIONS FIRST (hardcoded answers - faster & reliable)
       if (lowerMsg.includes("who is") && (lowerMsg.includes("pm") || lowerMsg.includes("prime minister"))) {
         const answer = "Narendra Modi is the Prime Minister of India. He took office on May 26, 2014, and is currently serving his third consecutive term.";
         speak(answer);
-        botResponse.textContent = answer;
         return;
       }
       
       if (lowerMsg.includes("what is ai") || lowerMsg.includes("artificial intelligence")) {
         const answer = "Artificial Intelligence is computer technology that allows machines to learn, solve problems, and do tasks like humans.";
         speak(answer);
-        botResponse.textContent = answer;
         return;
       }
       
       if (lowerMsg.includes("what is python")) {
         const answer = "Python is a popular programming language known for being easy to learn. It's widely used for web development, data science, and artificial intelligence.";
         speak(answer);
-        botResponse.textContent = answer;
         return;
       }
       
       if (lowerMsg.includes("what is computer")) {
         const answer = "A computer is an electronic device that processes data and performs tasks. It can store, retrieve, and process information quickly.";
         speak(answer);
-        botResponse.textContent = answer;
         return;
       }
       
       // GENERIC QUESTIONS - Wikipedia (for everything else)
       if (lowerMsg.includes("what is") || lowerMsg.includes("who is") || lowerMsg.includes("what are") || lowerMsg.includes("tell me about")) {
         
-        // DON'T speak "searching" immediately - wait for answer
-        botResponse.textContent = "Searching Wikipedia...";
-        
         // Get Wikipedia answer FIRST, THEN speak
         getWikipediaAnswer(message).then(answer => {
           if (answer) {
-            console.log("🔊 Speaking Wikipedia answer:", answer);
-            botResponse.textContent = answer;
+            console.log("ðŸ”Š Speaking Wikipedia answer:", answer);
             speak(answer); // SPEAK THE ACTUAL ANSWER
           } else {
             // No Wikipedia answer - speak fallback
             speak("Sorry, I couldn't find an answer on Wikipedia.");
-            botResponse.textContent = "No answer found";
             
-            // Robot mode: DON'T open Google
-            if (!robotMode) {
-              setTimeout(() => {
-                const query = message.replace(/ /g, "+");
-                window.open(`https://www.google.com/search?q=${query}`, "_blank", "noopener,noreferrer");
-              }, 100);
-            }
+            // Open Google search as fallback
+            setTimeout(() => {
+              const query = message.replace(/ /g, "+");
+              window.open(`https://www.google.com/search?q=${query}`, "_blank", "noopener,noreferrer");
+            }, 100);
           }
         }).catch(err => {
           console.error("Wikipedia error:", err);
           speak("Error searching for answer.");
-          botResponse.textContent = "Search error";
         });
         
         return;
@@ -829,42 +600,28 @@
         getWeather(loc);
       } else if (lowerMsg.includes("open google")) {
         speak("Opening Google...");
-        if (!robotMode) {
-          window.open("https://google.com", "_blank", "noopener");
-        }
+        window.open("https://google.com", "_blank", "noopener");
       } else if (lowerMsg.includes("open youtube")) {
         speak("Opening YouTube...");
-        if (!robotMode) {
-          window.open("https://youtube.com", "_blank", "noopener");
-        }
+        window.open("https://youtube.com", "_blank", "noopener");
       } else if (lowerMsg.includes("open whatsapp")) {
         speak("Opening WhatsApp...");
-        if (!robotMode) {
-          window.open("https://web.whatsapp.com/", "_blank", "noopener");
-        }
+        window.open("https://web.whatsapp.com/", "_blank", "noopener");
       } else if (lowerMsg.includes("chat with mom")) {
         speak("Opening chat with Mom...");
-        if (!robotMode) {
-          window.open("https://wa.me/916232899904", "_blank", "noopener");
-        }
+        window.open("https://wa.me/916232899904", "_blank", "noopener");
       } else if (lowerMsg.includes("call mom")) {
         speak("Calling Mom...");
-        if (!robotMode) {
-          window.open("https://wa.me/916232899904?call=true", "_blank", "noopener");
-        }
+        window.open("https://wa.me/916232899904?call=true", "_blank", "noopener");
       } else if (lowerMsg.includes("open github")) {
         speak("Opening your GitHub...");
-        if (!robotMode) {
-          window.open("https://github.com/Anshraj11111", "_blank", "noopener");
-        }
+        window.open("https://github.com/Anshraj11111", "_blank", "noopener");
       } else if (lowerMsg.includes("open my channel")) {
         speak("Opening your YouTube channel...");
-        if (!robotMode) {
-          window.open(
-            "https://youtube.com/@keystrokescoffee?si=q1ovNa5UyW87GknN",
-            "_blank", "noopener"
-          );
-        }
+        window.open(
+          "https://youtube.com/@keystrokescoffee?si=q1ovNa5UyW87GknN",
+          "_blank", "noopener"
+        );
       } else if (
         lowerMsg.includes("what is") ||
         lowerMsg.includes("who is") ||
@@ -872,7 +629,7 @@
       ) {
         const q = message.replace(/ /g, "+");
         window.open(`https://www.google.com/search?q=${q}`, "_blank", "noopener");
-        speak("Here’s what I found on Google.");
+        speak("Hereâ€™s what I found on Google.");
       } else if (lowerMsg.includes("wikipedia")) {
         const q = message.replace(/wikipedia/i, "").trim();
         speak("ROBOT MODE - No redirect");
@@ -892,11 +649,14 @@
           `https://www.google.com/search?q=${message.replace(/ /g, "+")}`,
           "_blank", "noopener"
         );
-        speak(`Here’s what I found for ${message}`);
+        speak(`Hereâ€™s what I found for ${message}`);
       }
     }
   </script>
 </body>
 </html>
+
+
+
 
 
