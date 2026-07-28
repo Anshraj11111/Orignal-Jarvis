@@ -236,6 +236,41 @@
       }
     });
 
+    // Page visibility handler - restart mic when user comes back
+    document.addEventListener("visibilitychange", () => {
+      console.log("👁️ Page visibility changed:", document.hidden ? "HIDDEN" : "VISIBLE");
+      
+      if (!document.hidden && isListening) {
+        // User came back to the page and mic should be on
+        console.log("🔄 User returned - restarting mic...");
+        setTimeout(() => {
+          if (isListening && !recognitionActive) {
+            try {
+              recognition.start();
+              console.log("✅ Mic restarted after page return");
+            } catch (e) {
+              console.log("Mic already running or starting");
+            }
+          }
+        }, 500); // Wait 500ms for page to fully focus
+      }
+    });
+
+    // Window focus handler - additional safety net
+    window.addEventListener("focus", () => {
+      console.log("🎯 Window focused");
+      if (isListening && !recognitionActive) {
+        setTimeout(() => {
+          try {
+            recognition.start();
+            console.log("✅ Mic restarted on window focus");
+          } catch (e) {
+            console.log("Already active");
+          }
+        }, 300);
+      }
+    });
+
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
     
