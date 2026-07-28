@@ -472,19 +472,23 @@
       botStatus.textContent = "Processing...";
       takeCommand(transcript.toLowerCase());
       
-      // CRITICAL: Force immediate restart for continuous listening
-      // Don't wait for onend event - restart NOW
-      if (isListening) {
+      // Mobile needs more aggressive restart after command
+      if (isMobile) {
         setTimeout(() => {
-          if (isListening && !recognitionActive) {
-            console.log("🔄 Force restart after command");
+          if (isListening) {
+            console.log("📱 Mobile: Force restart after command");
             try {
-              recognition.start();
+              recognition.stop(); // Stop first
+              setTimeout(() => {
+                if (isListening) {
+                  recognition.start(); // Then restart
+                }
+              }, 200);
             } catch (e) {
-              console.log("Already restarting...");
+              console.log("Mobile restart in progress...");
             }
           }
-        }, 500); // 500ms after hearing command, restart
+        }, 1000); // Wait 1 second after command
       }
       
       // Reset status after processing
@@ -500,8 +504,20 @@
       recognitionActive = false;
       
       if (event.error === 'no-speech') {
-        console.log("No speech detected, continuing...");
-        return; // Don't stop, continue listening
+        console.log("No speech detected, will restart after delay...");
+        // Mobile: longer delay to avoid battery drain
+        const delay = isMobile ? 3000 : 2000;
+        setTimeout(() => {
+          if (isListening && !recognitionActive) {
+            try {
+              recognition.start();
+              console.log("✅ Restarted after no-speech delay");
+            } catch (e) {
+              console.log("Already running");
+            }
+          }
+        }, delay);
+        return;
       }
       
       if (event.error === 'aborted') {
